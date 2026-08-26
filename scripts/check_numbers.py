@@ -22,7 +22,9 @@ def main() -> int:
     for pair in sorted({r["pair"] for r in rows}):
         sub = [r for r in rows if r["pair"] == pair]
 
-        def med(method, stage=None):
+        def med(method, stage=None, sub=sub):
+            # sub bound as a default: closing over the loop variable would make
+            # every med() call use the last pair's rows.
             v = finite([float(r["w2"]) for r in sub if r["method"] == method
                         and (stage is None or r["stage"] == str(stage))])
             return statistics.median(v) if v else None
