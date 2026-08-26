@@ -1,0 +1,12 @@
+# Everything in this repo runs on CPU. The 2D toys are the point and they train
+# in minutes; there is no CUDA path to install for.
+torch
+numpy
+scipy
+matplotlib
+pandas
+pillow
+
+# dev
+pytest
+ruff

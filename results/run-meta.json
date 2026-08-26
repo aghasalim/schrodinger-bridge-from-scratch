@@ -1,0 +1,18 @@
+{
+ "pairs": [
+  "gaussian->8gaussians",
+  "moons->spiral",
+  "circle->moons"
+ ],
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "n": 8000,
+ "dsb_ipf": 10,
+ "bm_steps": 4000,
+ "wall_clock_s": 448.32964858399646,
+ "torch": "2.13.0",
+ "device": "cpu"
+}
