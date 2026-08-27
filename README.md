@@ -196,9 +196,9 @@ tests/           22 tests
 - **Léonard. A survey of the Schrödinger problem and some of its connections with optimal transport. 2013.** [arXiv:1308.0215](https://arxiv.org/abs/1308.0215) The link between the Schrodinger problem and entropic OT.
 - **Lipman et al. Flow Matching for Generative Modeling. ICLR 2023.** [arXiv:2210.02747](https://arxiv.org/abs/2210.02747) Bridge matching is this with a different interpolant. See [rectified-flow-from-scratch](https://github.com/aghasalim/rectified-flow-from-scratch).
 
-## Conventions
+## Methodology
 
-Shared agent rules are in [`CONVENTIONS.md`](CONVENTIONS.md). Rule 8, no number
+The rules this follows are in [`METHODOLOGY.md`](METHODOLOGY.md). Rule 8, no number
 that did not come from a measurement, and rule 14, negative results stay in, are
 why the DSB section reads the way it does.
 
