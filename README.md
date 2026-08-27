@@ -1,5 +1,10 @@
 # schrodinger-bridge-from-scratch
 
+[![ci](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml/badge.svg)](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![results](https://img.shields.io/badge/results-reproducible-1a9850.svg)](results/)
+
 Entropic optimal transport, diffusion Schrodinger bridges by iterative
 proportional fitting, and bridge matching. Built from the papers and compared at
 matched compute, on a laptop CPU.
