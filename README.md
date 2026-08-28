@@ -13,8 +13,6 @@ The question this repo exists to answer is whether full DSB pays for itself
 against the simulation free method that replaced it. On these toys it does not,
 and the gap is large enough that it is worth writing down.
 
-![transporting a gaussian onto eight gaussians](results/animation-8gaussians.gif)
-
 ## What the problem is
 
 Diffusion models transport a Gaussian to your data. The Schrodinger bridge
@@ -46,11 +44,15 @@ during training.
 
 Sliced Wasserstein-2 to the target, median of 3 seeds, 8000 points per side:
 
-| pair | doing nothing | Sinkhorn (eps 0.03) | DSB (best IPF) | bridge match (ODE) | bridge match (SDE) |
+| pair | doing nothing | Sinkhorn (eps 0.03) | DSB (best run) | bridge match (ODE) | bridge match (SDE) |
 |---|---:|---:|---:|---:|---:|
 | circle to moons | 1.292 | 1.057 | 0.328 | 0.178 | **0.048** |
 | gaussian to 8 gaussians | 2.377 | **0.127** | 0.367 | 0.284 | 0.104 |
 | moons to spiral | 1.080 | 0.211 | 0.727 | 0.268 | **0.060** |
+
+Every column is the median of 3 seeds except DSB, which is the best of its 30
+runs, 10 IPF iterations by 3 seeds. That is the most generous reading of DSB I
+can give it and it still loses.
 
 ![method comparison](results/methods.png)
 
@@ -80,6 +82,15 @@ Sinkhorn is worth looking at directly, because the plan is the object everything
 
 Full detail in [notes/METHODS.md](notes/METHODS.md#the-static-bridge).
 ## Transport paths
+
+One bridge matching model, seed 0, integrated forward as an SDE. Each frame is
+one Euler Maruyama step out of 60, and the model, the 800 particles and sigma
+1.0 are the same in every frame. Grey is the target.
+
+![a gaussian splitting into eight gaussians over 60 SDE steps](results/animation-8gaussians.gif)
+
+The noise spreads the cloud out before the drift sorts it into modes, which is
+why the paths are nowhere near straight. All 400 of them at once:
 
 ![bridge matching transport paths](results/paths-8gaussians.png)
 
