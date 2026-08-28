@@ -22,6 +22,8 @@ to find out whether it pays for itself on these toys.
 """
 from __future__ import annotations
 
+import time
+
 import torch
 
 from ..sde import euler_maruyama
@@ -101,6 +103,7 @@ def train_dsb(fwd, bwd, x0_data, x1_data, n_ipf=10, sde_steps=40, inner_steps=80
     forward_drift = _Zero()          # first pass uses the reference (Brownian) process
 
     for k in range(n_ipf):
+        t_iter = time.perf_counter()
         # ---- forward simulation from pi_0, fit the backward drift on it
         idx = torch.randint(0, x0_data.shape[0], (n_particles,))
         xs, ts, bs = _simulate(forward_drift, x0_data[idx].clone(), sde_steps, sigma)
@@ -117,8 +120,11 @@ def train_dsb(fwd, bwd, x0_data, x1_data, n_ipf=10, sde_steps=40, inner_steps=80
         with torch.no_grad():
             probe = x0_data[torch.randint(0, x0_data.shape[0], (2048,))]
             got = euler_maruyama(fwd, probe.clone(), steps=sde_steps, sigma=sigma)
+        # Each iteration times itself. One total for the whole run can only be
+        # split evenly across iterations afterwards, and an even split is a made
+        # up per-iteration cost, not a measured one.
         history.append({"ipf": k, "bwd_loss": h_b[-1]["loss"], "fwd_loss": h_f[-1]["loss"],
-                        "transported": got})
+                        "transported": got, "wall_s": time.perf_counter() - t_iter})
         if verbose:
             print(f"      ipf {k:2d}  bwd {h_b[-1]['loss']:.4f}  fwd {h_f[-1]['loss']:.4f}")
     return history

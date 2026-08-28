@@ -69,15 +69,19 @@ def run_pair(pair: str, seed: int, n: int, dsb_ipf: int, bm_steps: int) -> list[
     # --- DSB ------------------------------------------------------------------
     torch.manual_seed(seed)
     fwd, bwd = DriftMLP(), DriftMLP()
-    t0 = time.perf_counter()
     hist = train_dsb(fwd, bwd, x0, x1, n_ipf=dsb_ipf, sde_steps=20, inner_steps=800,
                      n_particles=4096, sigma=1.0, seed=seed, verbose=False)
-    wall = time.perf_counter() - t0
     n_par = sum(p.numel() for p in fwd.parameters()) * 2
+    # Cost to reach this IPF iteration, summed from the per-iteration clocks the
+    # loop keeps. This used to be the run total split evenly over the iterations,
+    # which put ten made up x values on results/cost-vs-quality.png. The committed
+    # transport.csv is still that split run; bench/figures.py detects which it has.
+    elapsed = 0.0
     for e in hist:
+        elapsed += e["wall_s"]
         rows.append({"pair": pair, "seed": seed, "method": "dsb", "stage": e["ipf"],
                      "w2": sliced_w2(e["transported"], x1, seed=seed),
-                     "wall_s": wall * (e["ipf"] + 1) / dsb_ipf, "nfe": 20, "params": n_par})
+                     "wall_s": elapsed, "nfe": 20, "params": n_par})
     return rows
 
 
