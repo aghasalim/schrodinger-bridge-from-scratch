@@ -47,7 +47,7 @@ Sliced Wasserstein-2 to the target, median of 3 seeds, 8000 points per side:
 | pair | doing nothing | Sinkhorn (eps 0.03) | DSB (best run) | bridge match (ODE) | bridge match (SDE) |
 |---|---:|---:|---:|---:|---:|
 | circle to moons | 1.292 | 1.057 | 0.328 | 0.178 | **0.048** |
-| gaussian to 8 gaussians | 2.377 | **0.127** | 0.367 | 0.284 | 0.104 |
+| gaussian to 8 gaussians | 2.377 | 0.127 | 0.367 | 0.284 | **0.104** |
 | moons to spiral | 1.080 | 0.211 | 0.727 | 0.268 | **0.060** |
 
 Every column is the median of 3 seeds except DSB, which is the best of its 30
@@ -64,8 +64,10 @@ Wall clock on the same CPU, per pair:
 | bridge matching | 8.0 s | 1 | one regression, no simulation while training |
 | DSB | 33 s | 2 | 10 IPF iterations, each simulating and training |
 
-Bridge matching is four times cheaper than DSB and between two and twelve times
-more accurate on every pair. That is the headline and it is not close.
+Bridge matching is four times cheaper than DSB and closer to the target on every
+pair. How much closer depends on which column you read. Against DSB's best run
+the ODE column is 1.84x, 1.29x and 2.71x lower in sliced W2, in table row order,
+and the SDE column is 6.77x, 3.52x and 12.08x lower.
 
 ![cost against quality](results/cost-vs-quality.png)
 
