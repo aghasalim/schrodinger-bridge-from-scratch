@@ -71,6 +71,13 @@ and the SDE column is 6.77x, 3.52x and 12.08x lower.
 
 ![cost against quality](results/cost-vs-quality.png)
 
+One thing to read carefully on that figure. Each DSB run was timed once, as a
+whole, and that single total is split evenly over its 10 IPF iterations to place
+the ten red points. So the height of a DSB point is measured and its position
+along the x axis is that even split, which is also why the points fall in
+stripes. The 33 s total is the measurement. The experiment now times each IPF
+iteration on its own, so a future run will not need the split.
+
 ## DSB does not improve with more iterations
 Mine does not, and this is the most interesting negative result in the repo.
 

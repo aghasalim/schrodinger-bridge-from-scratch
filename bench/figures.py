@@ -155,11 +155,24 @@ def fig_dsb_ipf(out: Path) -> Path:
 
 def fig_cost(out: Path) -> Path:
     t = pd.read_csv(RESULTS / "transport.csv")
+    # The DSB run in the committed CSV was timed once and that one total was split
+    # evenly over its IPF iterations, which is why the red points sit in stripes.
+    # Read that off the data instead of assuming it: a run whose iterations timed
+    # themselves drops the caveat here rather than keeping a stale one.
+    d = t[t["method"] == "dsb"]
+    n_ipf = int(d["stage"].max()) + 1
+    total = d.groupby(["pair", "seed"])["wall_s"].transform("max")
+    split = bool(np.allclose(d["wall_s"], total * (d["stage"] + 1) / n_ipf))
+    xlab = "wall clock (seconds, M4 CPU)"
+    dsb_lab = "DSB, one point per IPF iteration"
+    if split:
+        xlab += f". DSB is one measured total per run, split evenly over {n_ipf} iterations"
+        dsb_lab += "\nx is that even split, not a timing per iteration"
     fig, ax = plt.subplots(figsize=(9.6, 5.4))
     # Labelled in place instead of with a legend, so nothing sits on the data.
     for method, label, colour, marker, xy, off in [
             ("sinkhorn-eps0.03", "Sinkhorn\ncapped at 2000 points", PURPLE, "s", (2.0, 0.30), (10, 8)),
-            ("dsb", "DSB, one point per IPF iteration", RED, "o", (11.0, 1.62), (0, 0)),
+            ("dsb", dsb_lab, RED, "o", (11.0, 1.62), (0, 0)),
             ("bridge-matching-sde", "bridge matching", GREEN, "^", (8.2, 0.045), (12, -4))]:
         sub = t[t["method"] == method]
         if method == "bridge-matching-sde":
@@ -169,7 +182,7 @@ def fig_cost(out: Path) -> Path:
         ax.annotate(label, xy=xy, xytext=off, textcoords="offset points",
                     color=colour, fontsize=10, fontweight="semibold",
                     ha="left", va="center", zorder=4)
-    ax.set_xlabel("wall clock (seconds, M4 CPU)")
+    ax.set_xlabel(xlab)
     ax.set_ylabel(W2LAB)
     ax.set_yscale("log")
     ax.set_xlim(0, 37)
