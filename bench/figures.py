@@ -43,6 +43,34 @@ PAIR = {"gaussian->8gaussians": "gaussian to 8 gaussians",
         "moons->spiral": "moons to spiral", "circle->moons": "circle to moons"}
 
 
+
+def _shrink_gif(path: Path, colours: int = 64) -> None:
+    """Rewrite the GIF on one shared palette.
+
+    PillowWriter gives every frame its own full palette, which is most of the file
+    size and is wasted here: consecutive frames differ only slightly, so one palette
+    taken from a middle frame covers all of them and lets the encoder store just the
+    changes. Colour count is high enough that the antialiased text does not band.
+    """
+    from PIL import Image
+
+    source = Image.open(path)
+    frames, durations = [], []
+    try:
+        while True:
+            frames.append(source.convert("RGB"))
+            durations.append(source.info.get("duration", 62))
+            source.seek(source.tell() + 1)
+    except EOFError:
+        pass
+    shared = frames[len(frames) // 2].quantize(colours, method=Image.Quantize.MEDIANCUT)
+    quantised = [f.quantize(palette=shared, dither=Image.Dither.NONE) for f in frames]
+    # No disposal method: leaving it unset lets the encoder store only the region
+    # that changed between frames. Setting disposal=2 forces a full redraw each
+    # frame and made the file larger than the one it replaced.
+    quantised[0].save(path, save_all=True, append_images=quantised[1:], loop=0,
+                      duration=durations, optimize=True)
+
 def _table(t: pd.DataFrame) -> pd.DataFrame:
     """The five headline numbers per pair, exactly as the README table quotes them."""
     rows = []
@@ -257,6 +285,7 @@ def anim_transport(pair: str, out: Path, seed: int = 0, steps: int = 60,
 
     anim = FuncAnimation(fig, update, frames=steps + 1 + hold, interval=1000 // fps)
     anim.save(out, writer=PillowWriter(fps=fps), dpi=72)
+    _shrink_gif(out)
     plt.close(fig)
     return out
 

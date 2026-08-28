@@ -9,7 +9,7 @@ Long form detail moved out of the README.
 IPF is supposed to converge. Mine does not, and this is the most interesting
 negative result in the repo.
 
-![DSB across IPF iterations](results/dsb-ipf.png)
+![DSB across IPF iterations](../results/dsb-ipf.png)
 
 Median sliced W2 by IPF iteration:
 
@@ -44,7 +44,7 @@ Sinkhorn is worth looking at directly, because the plan is the object everything
 else approximates. As eps shrinks the coupling concentrates from a diffuse blur
 onto a near deterministic map:
 
-![entropic OT plans at four regularisation levels](results/sinkhorn-plan.png)
+![entropic OT plans at four regularisation levels](../results/sinkhorn-plan.png)
 
 It is solved in log space. The direct version multiplies exp(-C/eps) and
 underflows to exactly zero for any eps below about 0.05 on these toys, which
