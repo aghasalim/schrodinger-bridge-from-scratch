@@ -27,7 +27,7 @@ jobs:
         run: python scripts/check_numbers.py
       - name: Golden export still reproduces the published number
         run: |
-          python scripts/export_golden.py
+          PYTHONPATH=. python scripts/export_golden.py
           git checkout -- verify/golden
 
   verify:
