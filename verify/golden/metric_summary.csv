@@ -1,0 +1,2 @@
+pair,seed,method,n_transported,n_target,n_proj,n_quantiles,published_w2
+gaussian->8gaussians,0,sinkhorn-eps0.03,2000,8000,256,512,1.197225153446e-01
