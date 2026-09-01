@@ -130,6 +130,54 @@ The experiment takes about 7.5 minutes on an M4 CPU and writes
 `results/transport.csv`. Figures read that file and never re run an experiment,
 so a plot cannot disagree with a number in this README.
 
+## Everything here is checked twice
+
+Every number in this README came out of one implementation. The tables come from
+`results/transport.csv`, which comes from `bench/experiment.py`, and the only
+thing that had ever checked them was `scripts/check_numbers.py`, which reads the
+same file in the same language with the same assumptions. That is not a check.
+If the median were taken over the wrong rows, or the Sinkhorn iteration had a
+sign error in it, everything downstream would agree, because everything
+downstream is the same code.
+
+So the published numbers are now recomputed by implementations that share
+nothing with the ones that produced them, and CI fails if any two disagree. An
+error would have to be made identically in several languages to survive.
+
+Run them with `./verify/verify.sh`, which skips any toolchain you do not have
+and prints how many passed, failed and were skipped.
+
+| language | what it recomputes | from | measured agreement |
+|---|---|---|---|
+| SQL | all 48 published medians and the wall clock table | `results/transport.csv` | exact at the 3 decimals published |
+| C | the log domain Sinkhorn fixed point, in double | `verify/golden/kernel_*.csv` | transport cost within 4.5e-07 relative, potentials within 1.9e-05 absolute |
+| Go | file structure: ragged rows, duplicate columns, non finite values, row counts against `run-meta.json` | every results and golden file | 180 rows over 9 runs, 90 DSB rows, 2 non finite, all as documented |
+| R | the multiples written in words, and a paired sign test | `results/transport.csv`, `README.md` | all 6 multiples exact as printed, 9 of 9 paired runs, p = 0.0020 |
+| Rust | sliced W2 at 32768 projections, and a Monte Carlo interval for the 256 projection estimator | `verify/golden/metric_*.csv` | 0.119069 against the published 0.119723, inside [0.113204, 0.125016] |
+| Ruby | the counts asserted in prose | `results/run-meta.json`, `results/transport.csv` | 7 of 7 phrases still true |
+| JavaScript | every table cell, in the cell it sits in | `results/transport.csv` | 48 of 48 cells |
+| Java | that the plan is a coupling, and its barycentric projection | `verify/golden/kernel_*.csv` | marginals within 3.2e-05 of uniform, map within 3.2e-05, cost within 7.9e-06 relative |
+
+The C, Rust and Java tolerances are not targets. They are what was measured, and
+they are as tight as they are because the Python runs in float32 and those three
+run in double, so the two sides cannot agree to better than single precision.
+The golden files they read are exported by `scripts/export_golden.py`, which
+refuses to write anything unless it first reproduces the published sliced W2 for
+that pair and seed exactly.
+
+Two of these found something the Python check cannot see. Swap two rows of the
+results table above, leaving the row labels where they are, and
+`scripts/check_numbers.py` still passes: every number it recomputes is still
+somewhere in the document. The JavaScript check resolves each cell by its row
+and column heading and reports 10 wrong cells. The R check is the other one, and
+it exists because `check_numbers.py` says in its own output that it does not
+read claims written in words, which is where the multiples and "four times
+cheaper" live.
+
+CI runs `verify/verify.sh`, then corrupts `results/transport.csv`, requires the
+run to fail, restores the file and requires it to pass again. A check that
+cannot fail is not checking anything, and this is how that stays true.
+
 ## Layout
 
 ```
@@ -141,6 +189,7 @@ sb/bridge_matching/  Brownian bridge interpolant, simulation free
 sb/sde.py        Euler Maruyama, forward and backward
 sb/models.py     drift MLP with sinusoidal time embedding
 bench/           the experiment and the figures
+verify/          the published numbers recomputed in eight other languages
 tests/           22 tests
 ```
 

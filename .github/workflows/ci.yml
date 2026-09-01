@@ -25,3 +25,49 @@ jobs:
         run: python -m pytest tests/ -q
       - name: Check quoted numbers against results/
         run: python scripts/check_numbers.py
+      - name: Golden export still reproduces the published number
+        run: |
+          python scripts/export_golden.py
+          git checkout -- verify/golden
+
+  verify:
+    # Differential verification. Every published number is recomputed by an
+    # implementation that shares nothing with the one that produced it, and the
+    # job fails if any two disagree. The last two steps are the check on the
+    # check: a corrupted results file has to be rejected, and the same file
+    # restored has to pass again, because a check that cannot fail is not one.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install R
+        run: |
+          command -v Rscript || sudo apt-get install -y --no-install-recommends r-base-core
+      - name: Toolchains present
+        run: |
+          for t in sqlite3 cc go cargo Rscript ruby node java python3; do
+            printf '%-8s %s\n' "$t" "$(command -v $t || echo MISSING)"
+          done
+      - name: Verify
+        run: |
+          ./verify/verify.sh | tee verify.log
+          grep -q ', 0 failed, 0 skipped' verify.log
+      - name: A corrupted results file must be rejected
+        run: |
+          sed -i 's/^circle->moons,1,untransported,0,1\./circle->moons,1,untransported,0,7./' results/transport.csv
+          git diff --quiet results/transport.csv && { echo "the corruption did not apply"; exit 1; }
+          if ./verify/verify.sh; then
+            echo "verify.sh passed on a corrupted results file, so it is checking nothing"
+            exit 1
+          fi
+          echo "rejected, as it should be"
+      - name: The same file restored must pass again
+        run: |
+          git checkout -- results/transport.csv
+          ./verify/verify.sh
