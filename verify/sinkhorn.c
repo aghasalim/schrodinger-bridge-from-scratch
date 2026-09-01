@@ -27,27 +27,39 @@ static void die(const char *msg, const char *what) {
     exit(1);
 }
 
-/* Index of a named column in a CSV header line, or -1. */
-static int column_of(char *header, const char *want) {
+/* Split on commas, ignoring any trailing newline. strtok_r is POSIX rather than
+ * C99 and gcc will not declare it under -std=c99, so this does its own walk. */
+static int nth_field(const char *line, int col, char *out, size_t outsz) {
+    const char *p = line;
     int idx = 0;
-    char *save = NULL;
-    for (char *t = strtok_r(header, ",\r\n", &save); t; t = strtok_r(NULL, ",\r\n", &save)) {
-        if (strcmp(t, want) == 0) return idx;
+    for (;;) {
+        const char *q = p;
+        while (*q && *q != ',' && *q != '\n' && *q != '\r') q++;
+        if (idx == col) {
+            size_t n = (size_t)(q - p);
+            if (n >= outsz) n = outsz - 1;
+            memcpy(out, p, n);
+            out[n] = '\0';
+            return 1;
+        }
+        if (*q != ',') return 0;
+        p = q + 1;
         idx++;
     }
+}
+
+/* Index of a named column in a CSV header line, or -1. */
+static int column_of(const char *header, const char *want) {
+    char buf[MAXLINE];
+    for (int i = 0; nth_field(header, i, buf, sizeof buf); i++)
+        if (strcmp(buf, want) == 0) return i;
     return -1;
 }
 
-static char *field(char *line, int col) {
+static char *field(const char *line, int col) {
     static char buf[MAXLINE];
-    snprintf(buf, sizeof buf, "%s", line);
-    int idx = 0;
-    char *save = NULL;
-    for (char *t = strtok_r(buf, ",\r\n", &save); t; t = strtok_r(NULL, ",\r\n", &save)) {
-        if (idx == col) return t;
-        idx++;
-    }
-    return NULL;
+    if (!nth_field(line, col, buf, sizeof buf)) return NULL;
+    return buf;
 }
 
 /* Read a two column point file with headers x and y. */
@@ -56,19 +68,19 @@ static int read_points(const char *path, double **out) {
     if (!fh) die("cannot open", path);
     char line[MAXLINE], header[MAXLINE];
     if (!fgets(header, MAXLINE, fh)) die("empty file", path);
-    char hdr[MAXLINE];
-    snprintf(hdr, sizeof hdr, "%s", header);
-    int cx = column_of(hdr, "x");
-    snprintf(hdr, sizeof hdr, "%s", header);
-    int cy = column_of(hdr, "y");
+    int cx = column_of(header, "x");
+    int cy = column_of(header, "y");
     if (cx < 0 || cy < 0) die("missing x or y column", path);
     int cap = 1024, n = 0;
     double *p = malloc((size_t)cap * 2 * sizeof(double));
     while (fgets(line, MAXLINE, fh)) {
         if (line[0] == '\n' || line[0] == '\r') continue;
         if (n == cap) { cap *= 2; p = realloc(p, (size_t)cap * 2 * sizeof(double)); }
-        char *a = field(line, cx), *b = field(line, cy);
-        if (!a || !b) die("short row in", path);
+        /* Two buffers, not one: field() hands back a single static buffer and
+         * both coordinates are needed at once. */
+        char a[MAXLINE], b[MAXLINE];
+        if (!nth_field(line, cx, a, sizeof a) || !nth_field(line, cy, b, sizeof b))
+            die("short row in", path);
         p[2 * n] = atof(a);
         p[2 * n + 1] = atof(b);
         n++;
@@ -109,12 +121,12 @@ int main(int argc, char **argv) {
     snprintf(path, sizeof path, "%s/verify/golden/kernel_summary.csv", root);
     FILE *sm = fopen(path, "r");
     if (!sm) die("cannot open", path);
-    char header[MAXLINE], line[MAXLINE], hdr[MAXLINE];
+    char header[MAXLINE], line[MAXLINE];
     if (!fgets(header, MAXLINE, sm)) die("empty file", path);
-    snprintf(hdr, sizeof hdr, "%s", header); int c_eps = column_of(hdr, "eps");
-    snprintf(hdr, sizeof hdr, "%s", header); int c_it = column_of(hdr, "iters");
-    snprintf(hdr, sizeof hdr, "%s", header); int c_cap = column_of(hdr, "iters_cap");
-    snprintf(hdr, sizeof hdr, "%s", header); int c_cost = column_of(hdr, "cost");
+    int c_eps = column_of(header, "eps");
+    int c_it = column_of(header, "iters");
+    int c_cap = column_of(header, "iters_cap");
+    int c_cost = column_of(header, "cost");
     if (c_eps < 0 || c_it < 0 || c_cap < 0 || c_cost < 0) die("missing column in", path);
 
     double *f = malloc((size_t)n * sizeof(double));
@@ -176,12 +188,12 @@ int main(int argc, char **argv) {
         snprintf(path, sizeof path, "%s/verify/golden/kernel_potentials.csv", root);
         FILE *pf = fopen(path, "r");
         if (!pf) die("cannot open", path);
-        char ph[MAXLINE], pl[MAXLINE], phc[MAXLINE];
+        char ph[MAXLINE], pl[MAXLINE];
         if (!fgets(ph, MAXLINE, pf)) die("empty file", path);
-        snprintf(phc, sizeof phc, "%s", ph); int p_eps = column_of(phc, "eps");
-        snprintf(phc, sizeof phc, "%s", ph); int p_ix = column_of(phc, "index");
-        snprintf(phc, sizeof phc, "%s", ph); int p_u = column_of(phc, "u");
-        snprintf(phc, sizeof phc, "%s", ph); int p_v = column_of(phc, "v");
+        int p_eps = column_of(ph, "eps");
+        int p_ix = column_of(ph, "index");
+        int p_u = column_of(ph, "u");
+        int p_v = column_of(ph, "v");
         if (p_eps < 0 || p_ix < 0 || p_u < 0 || p_v < 0) die("missing column in", path);
         int seen = 0;
         while (fgets(pl, MAXLINE, pf)) {
