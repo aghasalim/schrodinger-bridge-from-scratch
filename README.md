@@ -85,13 +85,15 @@ Mine does not, and this is the most interesting negative result in the repo.
 
 ![DSB across IPF iterations](results/dsb-ipf.png)
 
-Full detail in [notes/METHODS.md](notes/METHODS.md#dsb-does-not-improve-with-more-iterations).
+Derivation in [notes/METHODS.md](notes/METHODS.md#dsb-does-not-improve-with-more-iterations).
+
 ## The static bridge
 Sinkhorn is worth looking at directly, because the plan is the object everything else approximates.
 
 ![entropic OT plans at four regularisation levels](results/sinkhorn-plan.png)
 
-Full detail in [notes/METHODS.md](notes/METHODS.md#the-static-bridge).
+Derivation in [notes/METHODS.md](notes/METHODS.md#the-static-bridge).
+
 ## Transport paths
 
 One bridge matching model, seed 0, integrated forward as an SDE. Each frame is
@@ -106,10 +108,14 @@ why the paths are nowhere near straight. All 400 of them at once:
 ![bridge matching transport paths](results/paths-8gaussians.png)
 
 ## What I got wrong
-Three bugs, and the order matters because each one hid the next.
+Three bugs, and the order matters because each one hid the next. They stay written
+down for the same reason the DSB section reads the way it does: no figure appears
+that did not come out of a measurement, and nothing gets cut for being
+unflattering. Both of those are rules in [`METHODOLOGY.md`](METHODOLOGY.md).
 
-Full detail in [notes/METHODS.md](notes/METHODS.md#what-i-got-wrong).
-## Running it
+Derivation in [notes/METHODS.md](notes/METHODS.md#what-i-got-wrong).
+
+## Reproducing it
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -132,7 +138,7 @@ The experiment takes about 7.5 minutes on an M4 CPU and writes
 `results/transport.csv`. Figures read that file and never re run an experiment,
 so a plot cannot disagree with a number in this README.
 
-## Layout
+## Files
 
 ```
 sb/metrics/      sliced W2 on a shared quantile grid, marginal error
@@ -147,7 +153,7 @@ verify/          the published numbers, recomputed independently
 tests/           22 tests
 ```
 
-## Sources
+## References
 
 - **Cuturi. Sinkhorn Distances: Lightspeed Computation of Optimal Transport. NeurIPS 2013.** [arXiv:1306.0895](https://arxiv.org/abs/1306.0895) The entropic regularisation and the fixed point iteration.
 - **Peyré, Cuturi. Computational Optimal Transport. FnT ML 2019.** [arXiv:1803.00567](https://arxiv.org/abs/1803.00567) The log domain stabilisation used here, and the barycentric projection caveat.
@@ -156,27 +162,6 @@ tests/           22 tests
 - **Liu, Wu, Ye, Zhu. I2SB: Image-to-Image Schrödinger Bridge. ICML 2023.** [arXiv:2302.05872](https://arxiv.org/abs/2302.05872) The tractable bridge construction that makes the simulation free version work.
 - **Léonard. A survey of the Schrödinger problem and some of its connections with optimal transport. 2013.** [arXiv:1308.0215](https://arxiv.org/abs/1308.0215) The link between the Schrodinger problem and entropic OT.
 - **Lipman et al. Flow Matching for Generative Modeling. ICLR 2023.** [arXiv:2210.02747](https://arxiv.org/abs/2210.02747) Bridge matching is this with a different interpolant. See [rectified-flow-from-scratch](https://github.com/aghasalim/rectified-flow-from-scratch).
-
-## Methodology
-
-The rules this follows are in [`METHODOLOGY.md`](METHODOLOGY.md). Rule 8, no number
-that did not come from a measurement, and rule 14, negative results stay in, are
-why the DSB section reads the way it does.
-
-## Author
-
-Aghasalim Mustafazada, third year AI student at Howest, Belgium.
-
-<p align="center">
-  <a href="https://github.com/aghasalim">
-    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="github"></a>
-  <a href="https://www.kaggle.com/aghasalimmustafazada">
-    <img src="https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white" alt="kaggle"></a>
-  <a href="https://linkedin.com/in/mustafazada">
-    <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="linkedin"></a>
-  <a href="https://orcid.org/0009-0001-8746-4582">
-    <img src="https://img.shields.io/badge/ORCID-A6CE39?style=for-the-badge&logo=orcid&logoColor=white" alt="orcid"></a>
-</p>
 
 ## License
 
