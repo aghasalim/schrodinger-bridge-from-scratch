@@ -35,7 +35,7 @@ jobs:
     # implementation that shares nothing with the one that produced it, and the
     # job fails if any two disagree. The last two steps are the check on the
     # check: a corrupted results file has to be rejected, and the same file
-    # restored has to pass again, because a check that cannot fail is not one.
+    # restored has to pass again, because a check that cannot fail is not a check.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
