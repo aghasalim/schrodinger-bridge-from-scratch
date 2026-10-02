@@ -136,7 +136,7 @@ python -m bench.figures
 ```
 
 The experiment takes about 7.5 minutes on an M4 CPU and writes
-`results/transport.csv`. Figures read that file and never re run an experiment,
+`results/transport.csv`. Figures read that file and never rerun an experiment,
 so a plot cannot disagree with a number in this README.
 
 ## Files
