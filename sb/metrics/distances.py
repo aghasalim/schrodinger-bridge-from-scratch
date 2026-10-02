@@ -10,7 +10,11 @@ import torch
 
 
 def w2_exact_1d(a: torch.Tensor, b: torch.Tensor) -> float:
-    """Exact 2-Wasserstein in one dimension: sort both and compare."""
+    """Exact 2-Wasserstein in one dimension: sort both and compare.
+
+    Only exact when a and b have the same size. Otherwise the larger set is cut
+    to its lowest n values, the same size trap sliced_w2 below avoids.
+    """
     n = min(a.numel(), b.numel())
     return ((a.flatten().sort().values[:n] - b.flatten().sort().values[:n]) ** 2).mean().sqrt().item()
 
