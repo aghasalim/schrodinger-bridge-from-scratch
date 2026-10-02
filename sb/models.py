@@ -17,6 +17,7 @@ class TimeEmbedding(nn.Module):
         half = self.dim // 2
         freqs = torch.exp(-math.log(10_000.0)
                           * torch.arange(half, dtype=t.dtype, device=t.device) / half)
+        # t is in [0, 1]; 1000 puts it on the integer timestep scale the frequencies assume
         ang = t.view(-1, 1) * freqs.view(1, -1) * 1000.0
         return self.mlp(torch.cat([ang.sin(), ang.cos()], -1))
 
