@@ -150,6 +150,7 @@ sb/bridge_matching/  Brownian bridge interpolant, simulation free
 sb/sde.py        Euler Maruyama, forward and backward
 sb/models.py     drift MLP with sinusoidal time embedding
 bench/           the experiment and the figures
+scripts/         check_numbers.py and export_golden.py, the golden inputs for verify/
 verify/          the published numbers, recomputed independently
 tests/           22 tests
 ```
