@@ -93,7 +93,7 @@ const column = {
   "doing nothing": (p) => medW2(p, "untransported"),
   "Sinkhorn (eps 0.03)": (p) => medW2(p, "sinkhorn-eps0.03"),
   "DSB (best run)": (p) => dsbBest(p),
-  "bridge match (ODE)": (p) => medW2(p, "bridge-matching-ode", 100),
+  "bridge match (drift only)": (p) => medW2(p, "bridge-matching-ode", 100),
   "bridge match (SDE)": (p) => medW2(p, "bridge-matching-sde", 100),
 };
 for (const row of results.body) {
