@@ -52,6 +52,15 @@ def test_w2_exact_1d_matches_known_shift():
     assert abs(w2_exact_1d(a, a + 2.0) - 2.0) < 1e-4
 
 
+def test_w2_exact_1d_rejects_unequal_sizes():
+    # Same distribution, different sizes: truncating to the shorter set would
+    # compare against the lowest half of b and report a large distance.
+    a = torch.linspace(0, 1, 100)
+    b = torch.linspace(0, 1, 200)
+    with pytest.raises(ValueError):
+        w2_exact_1d(a, b)
+
+
 # --- sinkhorn --------------------------------------------------------------
 def test_sinkhorn_plan_is_a_valid_coupling():
     x, y = sample_pair("gaussian->8gaussians", 200, seed=0)
