@@ -12,11 +12,13 @@ import torch
 def w2_exact_1d(a: torch.Tensor, b: torch.Tensor) -> float:
     """Exact 2-Wasserstein in one dimension: sort both and compare.
 
-    Only exact when a and b have the same size. Otherwise the larger set is cut
-    to its lowest n values, the same size trap sliced_w2 below avoids.
+    Only exact when a and b have the same size, so unequal sizes raise rather
+    than quietly comparing against the lowest n values of the larger set, the
+    same size trap sliced_w2 below avoids.
     """
-    n = min(a.numel(), b.numel())
-    return ((a.flatten().sort().values[:n] - b.flatten().sort().values[:n]) ** 2).mean().sqrt().item()
+    if a.numel() != b.numel():
+        raise ValueError(f"w2_exact_1d needs equal sizes, got {a.numel()} and {b.numel()}")
+    return ((a.flatten().sort().values - b.flatten().sort().values) ** 2).mean().sqrt().item()
 
 
 def sliced_w2(a: torch.Tensor, b: torch.Tensor, n_proj: int = 256, seed: int = 0,
