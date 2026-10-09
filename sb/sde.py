@@ -41,6 +41,12 @@ def euler_maruyama(drift, x, steps=100, sigma=0.0, keep_path=False, backward=Fal
 
 @torch.no_grad()
 def ode_sample(drift, x, steps=100, keep_path=False, backward=False):
-    """sigma = 0. Deterministic limit, used at sampling time by bridge matching."""
+    """Integrate the drift with the noise term dropped (sigma = 0).
+
+    This is not the probability flow ODE of a drift trained with sigma > 0.
+    That ODE would also need a -0.5 * sigma^2 * score term, which nothing here
+    learns, so on a bridge matching drift this sampler is deterministic but
+    biased. It is exact only for a drift that was itself fitted with sigma = 0.
+    """
     return euler_maruyama(drift, x, steps=steps, sigma=0.0,
                           keep_path=keep_path, backward=backward)

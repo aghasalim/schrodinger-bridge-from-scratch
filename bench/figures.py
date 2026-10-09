@@ -95,7 +95,7 @@ def fig_methods(out: Path) -> Path:
     methods = [("untransported", "doing nothing"),
                ("sinkhorn-eps0.03", "Sinkhorn, eps 0.03"),
                ("dsb", "DSB, best run"),
-               ("bridge-matching-ode", "bridge matching, ODE"),
+               ("bridge-matching-ode", "bridge matching, drift only"),
                ("bridge-matching-sde", "bridge matching, SDE")]
     h = 0.15
     fig, ax = plt.subplots(figsize=(9.6, 5.4))

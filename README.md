@@ -47,7 +47,7 @@ during training.
 
 Sliced Wasserstein-2 to the target, median of 3 seeds, 8000 points per side:
 
-| pair | doing nothing | Sinkhorn (eps 0.03) | DSB (best run) | bridge match (ODE) | bridge match (SDE) |
+| pair | doing nothing | Sinkhorn (eps 0.03) | DSB (best run) | bridge match (drift only) | bridge match (SDE) |
 |---|---:|---:|---:|---:|---:|
 | circle to moons | 1.292 | 1.057 | 0.328 | 0.178 | **0.048** |
 | gaussian to 8 gaussians | 2.377 | 0.127 | 0.367 | 0.284 | **0.104** |
@@ -56,6 +56,11 @@ Sliced Wasserstein-2 to the target, median of 3 seeds, 8000 points per side:
 Every column is the median of 3 seeds except DSB, which is the best of its 30
 runs, 10 IPF iterations by 3 seeds. That is the most generous reading of DSB I
 can give it and it still loses.
+
+The drift only column is not an ODE sampler. It runs the drift trained with
+sigma = 1 and simply drops the noise term, and a proper probability flow ODE would
+also need a score correction I never learned, so that column is a biased
+deterministic sampler and the SDE column is the one that samples the bridge.
 
 ![method comparison](results/methods.png)
 
@@ -69,7 +74,7 @@ Wall clock on the same CPU, per pair:
 
 Bridge matching is four times cheaper than DSB and closer to the target on every
 pair. How much closer depends on which column you read. Against DSB's best run
-the ODE column is 1.84x, 1.29x and 2.71x lower in sliced W2, in table row order,
+the drift only column is 1.84x, 1.29x and 2.71x lower in sliced W2, in table row order,
 and the SDE column is 6.77x, 3.52x and 12.08x lower.
 
 ![cost against quality](results/cost-vs-quality.png)

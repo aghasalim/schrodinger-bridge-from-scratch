@@ -24,3 +24,8 @@
 **Tried:** calling `w2_exact_1d` on 100 against 200 points of the same distribution.
 **Measured:** it cut the larger set to its lowest 100 values and returned a nonzero distance between identical distributions, which is the same trap that once scored a good bridge matching run at 3.04 in `sliced_w2`.
 **Concluded:** it now raises on unequal sizes instead. Nothing in the pipeline called it with unequal sizes, so no published number moves.
+
+## 2026-10-10, the ODE column was never an ODE
+**Tried:** checking what `ode_sample` does with a bridge matching drift.
+**Measured:** it runs the drift trained with sigma = 1 and drops the noise term. The probability flow ODE for that process would also need a -0.5 sigma^2 score term, which nothing here learns, so the column labelled ODE was a biased deterministic sampler. Its numbers (0.178, 0.284, 0.268) are unchanged; only the name was wrong.
+**Concluded:** relabelled it "drift only" in the README table and in `results/methods.png`, and said why under the table. The CSV key stays `bridge-matching-ode` so the checks and `verify/` keep reading the same rows.
