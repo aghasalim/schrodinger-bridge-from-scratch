@@ -58,6 +58,8 @@ def run_pair(pair: str, seed: int, n: int, dsb_ipf: int, bm_steps: int) -> list[
     n_par = sum(p.numel() for p in m.parameters())
     for nfe in (10, 50, 100):
         sde = euler_maruyama(m, probe.clone(), steps=nfe, sigma=1.0)
+        # "ode" in the method name is historical: this is the sigma=1 drift run
+        # with the noise dropped, not a probability flow ODE. See ode_sample.
         ode = ode_sample(m, probe.clone(), steps=nfe)
         rows.append({"pair": pair, "seed": seed, "method": "bridge-matching-sde",
                      "stage": nfe, "w2": sliced_w2(sde, x1, seed=seed),
