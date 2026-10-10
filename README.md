@@ -6,42 +6,43 @@
 [![results](https://img.shields.io/badge/results-reproducible-1a9850.svg)](results/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23003678.svg)](https://doi.org/10.5281/zenodo.23003678)
 
-Entropic optimal transport, diffusion Schrodinger bridges by iterative
-proportional fitting, and bridge matching. Built from the papers and compared at
-matched compute, on a laptop CPU. Every number published here is recomputed from
-`results/` by implementations in `verify/` that share nothing with the code that
-produced it, and CI fails the build if any of them disagree.
+I implemented entropic optimal transport, diffusion Schrodinger bridges with
+iterative proportional fitting, and bridge matching from the papers. Then I
+compared them at matched compute on my laptop CPU. I recompute every published
+number from `results/` with code in `verify/` that shares nothing with the code
+that produced it, and CI fails the build if any of them disagree.
 
-The question this repo exists to answer is whether full DSB pays for itself
-against the simulation free method that replaced it. On these toys it does not,
-and the gap is large enough that it is worth writing down.
+I mainly wanted to know if full DSB is worth its cost compared to the simulation
+free method that replaced it. On these toy problems it isn't, and the gap was
+big enough that I thought it was worth writing up.
 
 ## What the problem is
 
-Diffusion models transport a Gaussian to your data. The Schrodinger bridge
-problem is the general version: given two arbitrary distributions and a
-reference process, find the process closest in KL to the reference that
-transports one to the other exactly. It is the dynamic form of entropic optimal
-transport, and standard diffusion is a degenerate special case where one end
+A diffusion model moves a Gaussian to your data. The Schrodinger bridge problem
+is the more general version. You have two arbitrary distributions and a reference
+process, and you look for the process that is closest in KL to the reference
+while moving one distribution exactly onto the other. It's the dynamic form of
+entropic optimal transport. Standard diffusion is the special case where one end
 happens to be Gaussian.
 
-Three ways to attack it, all implemented here:
+I implemented three ways to solve it.
 
-**Sinkhorn** solves the static problem directly. Given a cost matrix and a
-regularisation eps, find the coupling minimising transport cost minus eps times
-entropy. It is exact, it is the ground truth everything else is checked against,
-and it does not scale past a few thousand points because it needs the full
+Sinkhorn solves the static problem directly. You give it a cost matrix and a
+regularisation eps, and it finds the coupling that minimises transport cost minus
+eps times entropy. It's exact, so I use it as the ground truth to check the others.
+It doesn't scale past a few thousand points, though, because it needs the full
 cost matrix.
 
-**DSB** solves the dynamic problem by iterative proportional fitting. Two
-networks, alternating: fit a backward drift on trajectories from the forward
-process, then a forward drift on trajectories from the backward one, and repeat.
-Every outer iteration needs a full simulation pass plus a full training pass.
+DSB solves the dynamic problem with iterative proportional fitting. It uses two
+networks and alternates between them. First it fits a backward drift on
+trajectories from the forward process, then a forward drift on trajectories from
+the backward one, and repeats. Each outer iteration needs a full simulation pass
+and a full training pass.
 
-**Bridge matching** replaces the straight interpolant of flow matching with a
+Bridge matching takes flow matching and swaps the straight interpolant for a
 Brownian bridge, which is the reference process conditioned to hit both
-endpoints. One network, one regression, no alternating iterations, no simulation
-during training.
+endpoints. It needs one network and one regression. There are no alternating
+iterations and no simulation during training.
 
 ## Results
 
@@ -53,14 +54,15 @@ Sliced Wasserstein-2 to the target, median of 3 seeds, 8000 points per side:
 | gaussian to 8 gaussians | 2.377 | 0.127 | 0.367 | 0.284 | **0.104** |
 | moons to spiral | 1.080 | 0.211 | 0.727 | 0.268 | **0.060** |
 
-Every column is the median of 3 seeds except DSB, which is the best of its 30
-runs, 10 IPF iterations by 3 seeds. That is the most generous reading of DSB I
-can give it and it still loses.
+Every column is the median of 3 seeds except DSB. For DSB I took the best of its 30
+runs, 10 IPF iterations by 3 seeds. That's as generous to DSB as I could be, and it
+still loses.
 
-The drift only column is not an ODE sampler. It runs the drift trained with
-sigma = 1 and simply drops the noise term, and a proper probability flow ODE would
-also need a score correction I never learned, so that column is a biased
-deterministic sampler and the SDE column is the one that samples the bridge.
+The drift only column isn't an ODE sampler. It runs the drift trained with
+sigma = 1 and just drops the noise term. A proper probability flow ODE would also
+need a score correction that I never learned. So that column is a biased
+deterministic sampler, and the SDE column is the one that actually samples the
+bridge.
 
 ![method comparison](results/methods.png)
 
@@ -72,29 +74,29 @@ Wall clock on the same CPU, per pair:
 | bridge matching | 8.0 s | 1 | one regression, no simulation while training |
 | DSB | 33 s | 2 | 10 IPF iterations, each simulating and training |
 
-Bridge matching is four times cheaper than DSB and closer to the target on every
-pair. How much closer depends on which column you read. Against DSB's best run
-the drift only column is 1.84x, 1.29x and 2.71x lower in sliced W2, in table row order,
-and the SDE column is 6.77x, 3.52x and 12.08x lower.
+Bridge matching costs four times less than DSB and gets closer to the target on
+every pair. How much closer depends on the column. Compared with DSB's best run,
+the drift only column is 1.84x, 1.29x and 2.71x lower in sliced W2, in table row order.
+The SDE column is 6.77x, 3.52x and 12.08x lower.
 
 ![cost against quality](results/cost-vs-quality.png)
 
-One thing to read carefully on that figure. Each DSB run was timed once, as a
-whole, and that single total is split evenly over its 10 IPF iterations to place
-the ten red points. So the height of a DSB point is measured and its position
-along the x axis is that even split, which is also why the points fall in
-stripes. The 33 s total is the measurement. The experiment now times each IPF
-iteration on its own, so a future run will not need the split.
+Be careful reading that figure. I timed each DSB run once as a whole, then split
+that total evenly over its 10 IPF iterations to place the ten red points. So the
+height of a DSB point is measured, but its x position comes from that even split.
+That's also why the points line up in stripes. The 33 s total is what I actually
+measured. The experiment now times each IPF iteration separately, so future runs
+won't need the split.
 
 ## DSB does not improve with more iterations
-Mine does not, and this is the most interesting negative result in the repo.
+Mine doesn't, and I think it's the most interesting negative result here.
 
 ![DSB across IPF iterations](results/dsb-ipf.png)
 
 Derivation in [notes/METHODS.md](notes/METHODS.md#dsb-does-not-improve-with-more-iterations).
 
 ## The static bridge
-Sinkhorn is worth looking at directly, because the plan is the object everything else approximates.
+I think the Sinkhorn plan is worth looking at by itself, since it's what all the other methods are approximating.
 
 ![entropic OT plans at four regularisation levels](results/sinkhorn-plan.png)
 
@@ -102,22 +104,22 @@ Derivation in [notes/METHODS.md](notes/METHODS.md#the-static-bridge).
 
 ## Transport paths
 
-One bridge matching model, seed 0, integrated forward as an SDE. Each frame is
-one Euler Maruyama step out of 60, and the model, the 800 particles and sigma
-1.0 are the same in every frame. Grey is the target.
+This is one bridge matching model, seed 0, integrated forward as an SDE. Each
+frame is one Euler Maruyama step out of 60. The model, the 800 particles and sigma
+1.0 stay the same in every frame. Grey is the target.
 
 ![a gaussian splitting into eight gaussians over 60 SDE steps](results/animation-8gaussians.gif)
 
-The noise spreads the cloud out before the drift sorts it into modes, which is
-why the paths are nowhere near straight. All 400 of them at once:
+The noise spreads the cloud out before the drift sorts it into modes, so the
+paths are far from straight. Here are all 400 of them at once.
 
 ![bridge matching transport paths](results/paths-8gaussians.png)
 
 ## What I got wrong
-Three bugs, and the order matters because each one hid the next. They stay written
-down for the same reason the DSB section reads the way it does: no figure appears
-that did not come out of a measurement, and nothing gets cut for being
-unflattering. Both of those are rules in [`METHODOLOGY.md`](METHODOLOGY.md).
+I had three bugs, and the order matters because each one hid the next. I kept
+them written down for the same reason the DSB section looks the way it does.
+Every figure has to come from a measurement, and I don't cut things for making
+me look bad. Both are rules in [`METHODOLOGY.md`](METHODOLOGY.md).
 
 Derivation in [notes/METHODS.md](notes/METHODS.md#what-i-got-wrong).
 
@@ -141,8 +143,8 @@ python -m bench.figures
 ```
 
 The experiment takes about 7.5 minutes on an M4 CPU and writes
-`results/transport.csv`. Figures read that file and never rerun an experiment,
-so a plot cannot disagree with a number in this README.
+`results/transport.csv`. The figures only read that file and never rerun an
+experiment, so a plot can't disagree with a number in this README.
 
 ## Files
 
