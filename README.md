@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.jpg" alt="Line drawing of a bridge made of random paths joining two clouds of points" width="100%"></p>
+
 # schrodinger-bridge-from-scratch
 
 [![ci](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml/badge.svg)](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml)
@@ -15,6 +17,23 @@ that produced it, and CI fails the build if any of them disagree.
 I mainly wanted to know if full DSB is worth its cost compared to the simulation
 free method that replaced it. On these toy problems it isn't, and the gap was
 big enough that I thought it was worth writing up.
+
+<details>
+<summary>Contents</summary>
+
+- [What the problem is](#what-the-problem-is)
+- [Results](#results)
+- [DSB does not improve with more iterations](#dsb-does-not-improve-with-more-iterations)
+- [The static bridge](#the-static-bridge)
+- [Transport paths](#transport-paths)
+- [What I got wrong](#what-i-got-wrong)
+- [Reproducing it](#reproducing-it)
+- [Files](#files)
+- [References](#references)
+- [Citation](#citation)
+- [License](#license)
+
+</details>
 
 ## What the problem is
 
@@ -171,6 +190,21 @@ tests/           22 tests
 - **Liu, Wu, Ye, Zhu. I2SB: Image-to-Image Schrödinger Bridge. ICML 2023.** [arXiv:2302.05872](https://arxiv.org/abs/2302.05872) The tractable bridge construction that makes the simulation free version work.
 - **Léonard. A survey of the Schrödinger problem and some of its connections with optimal transport. 2013.** [arXiv:1308.0215](https://arxiv.org/abs/1308.0215) The link between the Schrodinger problem and entropic OT.
 - **Lipman et al. Flow Matching for Generative Modeling. ICLR 2023.** [arXiv:2210.02747](https://arxiv.org/abs/2210.02747) Bridge matching is this with a different interpolant. See [rectified-flow-from-scratch](https://github.com/aghasalim/rectified-flow-from-scratch).
+
+## Citation
+
+If you use this work, please cite it. The same record is in [`CITATION.cff`](CITATION.cff).
+
+```bibtex
+@software{mustafazada2026schrodingerbridgefromscr,
+  author  = {Mustafazada, Aghasalim},
+  title   = {Schrodinger Bridges from scratch},
+  year    = {2026},
+  version = {1.0.1},
+  doi     = {10.5281/zenodo.23003678},
+  url     = {https://github.com/aghasalim/schrodinger-bridge-from-scratch}
+}
+```
 
 ## License
 
