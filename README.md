@@ -1,5 +1,3 @@
-<p align="center"><img src="assets/banner.jpg" alt="Line drawing of a bridge made of random paths joining two clouds of points" width="100%"></p>
-
 # schrodinger-bridge-from-scratch
 
 [![ci](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml/badge.svg)](https://github.com/aghasalim/schrodinger-bridge-from-scratch/actions/workflows/ci.yml)
